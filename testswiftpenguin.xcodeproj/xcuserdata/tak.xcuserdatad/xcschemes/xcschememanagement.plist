@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SchemeUserState</key>
+	<dict>
+		<key>testswiftpenguin.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>0</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>3B9008D81C33B5F400F4B6CF</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>3B9008EE1C33B5F400F4B6CF</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>3B9008F91C33B5F400F4B6CF</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+	</dict>
+</dict>
+</plist>
