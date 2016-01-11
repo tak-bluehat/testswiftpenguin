@@ -77,7 +77,7 @@ class GameViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.banner.frame = CGRect(x: 224, y: 80, width: 238, height: 60)
+        self.banner.frame = CGRect(x: 224, y: 80, width: 233, height: 55)
         self.displayLoadingBanner()
         
         self.scene = SCNScene(named: "art.scnassets/world.dae")!
