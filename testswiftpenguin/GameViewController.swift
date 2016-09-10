@@ -19,6 +19,7 @@ class GameViewController: UIViewController {
     var ground_array: NSMutableArray = NSMutableArray()
     var camera_btn: UIImageView
     var eat_btn: UIButton
+    var eat_timer: Timer
     var move_btn: UIImageView
     var cameraNode: SCNNode
     var lightNode: SCNNode
@@ -32,6 +33,11 @@ class GameViewController: UIViewController {
     var scnView: SCNView
     var bubble_flag: Bool = false
     var cancel_minus_efect_flag:Bool = false
+    var trans_flag:Bool = false
+    var gold_ring:SCNNode?
+    var gold_ring_timer:Timer
+    var move_divide:Int = 100
+    var penguin_base_material:[SCNMaterial]
     var banner:UIImageView
     var points: UILabel
     var point: Int = 0
@@ -50,6 +56,7 @@ class GameViewController: UIViewController {
         self.cameraNode = SCNNode()
         self.lightNode = SCNNode()
         self.ambientLightNode = SCNNode()
+        self.gold_ring = nil
         self.shati_node = nil
         self.shati_node2 = nil
         self.shati_node3 = nil
@@ -60,10 +67,14 @@ class GameViewController: UIViewController {
         self.groundMaterial = SCNMaterial()
         self.scnView = SCNView()
         
+        self.penguin_base_material = []
+        self.gold_ring_timer = Timer()
+        self.eat_timer = Timer()
+        
         // button init
         self.camera_btn = UIImageView(image: UIImage(named: "camera_btn.png"))
         self.move_btn = UIImageView(image: UIImage(named: "move_btn.png"))
-        self.eat_btn = UIButton(type: UIButtonType.Custom)
+        self.eat_btn = UIButton(type: UIButtonType.custom)
         
         // label init
         self.points = UILabel(frame: CGRect(x: 50, y: 30, width: 100, height: 50))
@@ -98,7 +109,7 @@ class GameViewController: UIViewController {
         
         // create and add a light to the scene
         self.lightNode.light = SCNLight()
-        self.lightNode.light!.type = SCNLightTypeOmni
+        self.lightNode.light!.type = SCNLight.LightType.omni
         self.lightNode.light!.color = UIColor(red: 0.96, green: 0.96, blue: 0.80, alpha: 0.9)
         self.lightNode.position = SCNVector3(x: 0, y: 60, z: 0)
         //self.lightNode.light!.castsShadow = true
@@ -106,15 +117,15 @@ class GameViewController: UIViewController {
         
         // create and add an ambient light to the scene
         self.ambientLightNode.light = SCNLight()
-        self.ambientLightNode.light!.type = SCNLightTypeOmni
-        self.ambientLightNode.light!.color = UIColor.whiteColor()
+        self.ambientLightNode.light!.type = SCNLight.LightType.omni
+        self.ambientLightNode.light!.color = UIColor.white
         //self.ambientLightNode.light?.castsShadow = true
         self.ambientLightNode.position = SCNVector3(0, 10, 15)
         self.scene.rootNode.addChildNode(ambientLightNode)
         
         // create penguin
         let penguin = SCNScene(named: "art.scnassets/penguin3.dae")!
-        let penguinNode:SCNNode = penguin.rootNode.childNodeWithName("Cube", recursively: false)!
+        let penguinNode:SCNNode = penguin.rootNode.childNode(withName: "Cube", recursively: false)!
         self.scene.rootNode.addChildNode(penguinNode)
 
         
@@ -145,7 +156,7 @@ class GameViewController: UIViewController {
         self.groundMaterial.diffuse.contents = UIImage(named: "ground.jpg")
         self.groundMaterial.fresnelExponent = 10.0
         groundNode.geometry!.materials = [self.groundMaterial]
-        ground_array.addObject(groundNode)
+        ground_array.add(groundNode)
         //self.scene.rootNode.addChildNode(groundNode)
         
         // create camera button
@@ -159,21 +170,21 @@ class GameViewController: UIViewController {
         
         // create eat button
         self.eat_btn.frame = CGRect(x: 540, y: 240, width: 84, height: 84)
-        self.eat_btn.setImage(UIImage(named: "eat_btn.png"), forState: UIControlState.Normal)
-        self.eat_btn.setImage(UIImage(named: "eat_btn_press.png"), forState: UIControlState.Highlighted)
-        self.eat_btn.addTarget(self, action: "eatState", forControlEvents: UIControlEvents.TouchDown)
+        self.eat_btn.setImage(UIImage(named: "eat_btn.png"), for: UIControlState())
+        self.eat_btn.setImage(UIImage(named: "eat_btn_press.png"), for: UIControlState.highlighted)
+        self.eat_btn.addTarget(self, action: #selector(GameViewController.eatState), for: UIControlEvents.touchDown)
         self.view.addSubview(self.eat_btn)
         
         // create points label
         self.points.text = "0 points"
-        self.points.font = UIFont.systemFontOfSize(15)
-        self.points.textColor = UIColor.whiteColor()
+        self.points.font = UIFont.systemFont(ofSize: 15)
+        self.points.textColor = UIColor.white
         self.view.addSubview(self.points)
         
         // create depth label
         self.depth_label.text = "40 m"
-        self.depth_label.font = UIFont.systemFontOfSize(15)
-        self.depth_label.textColor = UIColor.whiteColor()
+        self.depth_label.font = UIFont.systemFont(ofSize: 15)
+        self.depth_label.textColor = UIColor.white
         self.view.addSubview(self.depth_label)
         
         
@@ -190,27 +201,27 @@ class GameViewController: UIViewController {
         // configure the view
         scnView.backgroundColor = UIColor(red: 0, green: 0, blue: 1, alpha: 1.0)
         
-        _ = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: "generateIwashi", userInfo: nil, repeats: true)
-        _ = NSTimer.scheduledTimerWithTimeInterval(3.5, target: self, selector: "generateIka", userInfo: nil, repeats: true)
-        _ = NSTimer.scheduledTimerWithTimeInterval(5.0, target: self, selector: "generateShati", userInfo: nil, repeats: false)
-        _ = NSTimer.scheduledTimerWithTimeInterval(22.5, target: self, selector: "generateAmi", userInfo: nil, repeats: false)
-        _ = NSTimer.scheduledTimerWithTimeInterval(3.0, target: self, selector: "generateEi", userInfo: nil, repeats: false)
-        _ = NSTimer.scheduledTimerWithTimeInterval(0.05, target: self, selector: "moveObject", userInfo: nil, repeats: true)
-        _ = NSTimer.scheduledTimerWithTimeInterval(5.0, target: self, selector: "generateCycleBubble", userInfo: nil, repeats: true)
-        _ = NSTimer.scheduledTimerWithTimeInterval(1.5, target: self, selector: "displayStartBanner", userInfo: nil, repeats: false)
-        let displayLink = CADisplayLink(target: self, selector: "moveObject")
+        _ = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(GameViewController.generateIwashi), userInfo: nil, repeats: true)
+        _ = Timer.scheduledTimer(timeInterval: 3.5, target: self, selector: #selector(GameViewController.generateIka), userInfo: nil, repeats: true)
+        _ = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(GameViewController.generateShati), userInfo: nil, repeats: false)
+        _ = Timer.scheduledTimer(timeInterval: 22.5, target: self, selector: #selector(GameViewController.generateAmi), userInfo: nil, repeats: false)
+        _ = Timer.scheduledTimer(timeInterval: 3.0, target: self, selector: #selector(GameViewController.generateEi), userInfo: nil, repeats: false)
+        _ = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(GameViewController.moveObject), userInfo: nil, repeats: true)
+        _ = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(GameViewController.generateCycleBubble), userInfo: nil, repeats: true)
+        _ = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(GameViewController.displayStartBanner), userInfo: nil, repeats: false)
+        let displayLink = CADisplayLink(target: self, selector: #selector(GameViewController.moveObject))
         displayLink.frameInterval = 1
-        displayLink.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
+        displayLink.add(to: RunLoop.current, forMode: RunLoopMode.defaultRunLoopMode)
         
     }
     
     func generateIwashi(){
-        let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
         _ = Fishes(s_scene: self.scene, penguin_node: penguin, game_controller: self)
     }
     
     func generateIka(){
-        let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
         _ = Ikas(s_scene: self.scene, penguin_node: penguin, game_controller: self)
     }
     
@@ -230,20 +241,24 @@ class GameViewController: UIViewController {
         self.displayBanner("banner_collission.png")
     }
     
+    func displayTransBanner(){
+        self.displayBanner("banner_trans.png")
+    }
+    
     func hideBanner(){
         self.banner.removeFromSuperview()
     }
     
-    func displayBanner(image_name:String){
+    func displayBanner(_ image_name:String){
         self.banner.image = UIImage(named: image_name)
         self.view.addSubview(self.banner)
-        _ = NSTimer.scheduledTimerWithTimeInterval(2.5, target: self, selector: "hideBanner", userInfo: nil, repeats: false)
+        _ = Timer.scheduledTimer(timeInterval: 2.5, target: self, selector: #selector(GameViewController.hideBanner), userInfo: nil, repeats: false)
     }
     
     func generateShati(){
         let shati:SCNScene = SCNScene(named: "art.scnassets/shati_new.dae")!
-        let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
-        self.shati_node = shati.rootNode.childNodeWithName("shati_new", recursively: false)
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
+        self.shati_node = shati.rootNode.childNode(withName: "shati_new", recursively: false)
         self.shati_node!.scale = SCNVector3(1.5, 1.5, 1.5)
             
         let x:Double = Double(penguin.position.x) + Double(arc4random_uniform(20)) - 10
@@ -255,7 +270,7 @@ class GameViewController: UIViewController {
         
         // shati2
         let shati2:SCNScene = SCNScene(named: "art.scnassets/shati_new.dae")!
-        self.shati_node2 = shati2.rootNode.childNodeWithName("shati_new", recursively: false)
+        self.shati_node2 = shati2.rootNode.childNode(withName: "shati_new", recursively: false)
         self.shati_node2!.scale = SCNVector3(1.5, 1.5, 1.5)
         
         let x_2:Double = Double(penguin.position.x) + Double(arc4random_uniform(20)) - 10
@@ -267,7 +282,7 @@ class GameViewController: UIViewController {
         
         // shati3
         let shati3:SCNScene = SCNScene(named: "art.scnassets/shati_new.dae")!
-        self.shati_node3 = shati3.rootNode.childNodeWithName("shati_new", recursively: false)
+        self.shati_node3 = shati3.rootNode.childNode(withName: "shati_new", recursively: false)
         self.shati_node3!.scale = SCNVector3(1.5, 1.5, 1.5)
         
         let x_3:Double = Double(penguin.position.x) + Double(arc4random_uniform(20)) - 10
@@ -282,7 +297,7 @@ class GameViewController: UIViewController {
     
     func adjustShati(){
         let amount:Int = Int(arc4random_uniform(3))
-        let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
         
         let x:Double = Double(penguin.position.x) + Double(arc4random_uniform(20)) - 10
         let y:Double = Double(penguin.position.y) + Double(arc4random_uniform(20)) - 10
@@ -309,8 +324,8 @@ class GameViewController: UIViewController {
     func generateAmi(){
         let ami:SCNScene = SCNScene(named: "art.scnassets/ami.dae")!
         if( self.ami_node == nil){
-            let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
-            self.ami_node = ami.rootNode.childNodeWithName("ami", recursively: false)
+            let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
+            self.ami_node = ami.rootNode.childNode(withName: "ami", recursively: false)
             self.ami_node!.opacity = 0.6
             
             let x:Double = Double(penguin.position.x) + Double(arc4random_uniform(10)) - 5
@@ -323,7 +338,7 @@ class GameViewController: UIViewController {
     }
     
     func adjustAmi(){
-        let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
         
         let x:Double = Double(penguin.position.x) + Double(arc4random_uniform(10)) - 5
         let y:Double = Double(penguin.position.y) + Double(arc4random_uniform(10)) - 5
@@ -335,8 +350,8 @@ class GameViewController: UIViewController {
     func generateEi(){
         let ei:SCNScene = SCNScene(named: "art.scnassets/ei.dae")!
         if( self.ei_node == nil){
-            let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
-            self.ei_node = ei.rootNode.childNodeWithName("ei", recursively: false)            
+            let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
+            self.ei_node = ei.rootNode.childNode(withName: "ei", recursively: false)            
             let x:Double = Double(penguin.position.x) + Double(arc4random_uniform(10)) - 5
             let y:Double = Double(penguin.position.y) + Double(arc4random_uniform(10)) - 5
             let z:Double = -120;
@@ -347,8 +362,8 @@ class GameViewController: UIViewController {
     }
     
     func adjustEi(){
-        let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
-        self.ei_node = self.scene.rootNode.childNodeWithName("ei", recursively: false)
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
+        self.ei_node = self.scene.rootNode.childNode(withName: "ei", recursively: false)
         let x:Double = Double(penguin.position.x) + Double(arc4random_uniform(10)) - 5
         let y:Double = Double(penguin.position.y) + Double(arc4random_uniform(10)) - 5
         let z:Double = -120;
@@ -357,7 +372,7 @@ class GameViewController: UIViewController {
     }
     
     func moveObject(){
-        let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
         if( self.shati_node != nil ){
             self.shati_node!.position = SCNVector3(
                 x: self.shati_node!.position.x,
@@ -374,7 +389,11 @@ class GameViewController: UIViewController {
                     && fabs(penguin.position.x - self.shati_node!.position.x) < 2
                     && self.cancel_minus_efect_flag == false
             ){
-                self.minusEfect()
+                if( self.trans_flag == false ){
+                    self.minusEfect()
+                }else if( self.trans_flag == true ){
+                    self.eatEfect(node: self.shati_node!)
+                }
 
             }
         }
@@ -386,12 +405,16 @@ class GameViewController: UIViewController {
                     z: self.shati_node2!.position.z + 0.1
                 )
                 if(
-                fabs(penguin.position.z - self.shati_node2!.position.z) < 3
+                    fabs(penguin.position.z - self.shati_node2!.position.z) < 3
                     && fabs(penguin.position.y - self.shati_node2!.position.y) < 3
                     && fabs(penguin.position.x - self.shati_node2!.position.x) < 2
                     && self.cancel_minus_efect_flag == false
                 ){
-                    self.minusEfect()
+                    if( self.trans_flag == false ){
+                        self.minusEfect()
+                    }else if( self.trans_flag == true ){
+                        self.eatEfect(node: self.shati_node2!)
+                    }
                     
                 }
             }
@@ -409,7 +432,11 @@ class GameViewController: UIViewController {
                         && fabs(penguin.position.x - self.shati_node3!.position.x) < 2
                         && self.cancel_minus_efect_flag == false
                     ){
-                        self.minusEfect()
+                        if( self.trans_flag == false ){
+                            self.minusEfect()
+                        }else if( self.trans_flag == true ){
+                            self.eatEfect(node: self.shati_node3!)
+                        }
                         
                 }
             }
@@ -430,7 +457,11 @@ class GameViewController: UIViewController {
                     && fabs(penguin.position.x - self.ami_node!.position.x) < 10
                     && self.cancel_minus_efect_flag == false
                 ){
-                    self.minusEfect()
+                    if( self.trans_flag == false ){
+                        self.minusEfect()
+                    }else if( self.trans_flag == true ){
+                        self.eatEfect(node: self.ami_node!)
+                    }
                     
             }else if( fabs(self.ami_node!.position.z - Float(-80)) < 0.1 ){
                 self.displayAmiBanner()
@@ -452,51 +483,141 @@ class GameViewController: UIViewController {
                     && fabs(penguin.position.x - self.ei_node!.position.x) < 2
                     && self.cancel_minus_efect_flag == false
                 ){
-                    self.minusEfect()
+                    if( self.trans_flag == false ){
+                        self.minusEfect()
+                    }else if( self.trans_flag == true ){
+                        self.eatEfect(node: self.ei_node!)
+                    }
                     
             }
         }
-        for var index = 0; index < bubble_array.count; index++ {
-            let bubble:SCNNode = bubble_array.objectAtIndex(index) as! SCNNode
+        for index in 0 ..< bubble_array.count {
+            let bubble:SCNNode = bubble_array.object(at: index) as! SCNNode
             bubble.position = SCNVector3(x: bubble.position.x, y: bubble.position.y, z: bubble.position.z + 0.1)
             if( bubble.position.z > 20 ){
                 bubble.removeFromParentNode()
-                bubble_array.removeObject(bubble)
+                bubble_array.remove(bubble)
             }
         }
-        for var index = 0; index < cycle_bubble_array.count; index++ {
-            let bubble:SCNNode = cycle_bubble_array.objectAtIndex(index) as! SCNNode
+        for index in 0 ..< cycle_bubble_array.count {
+            let bubble:SCNNode = cycle_bubble_array.object(at: index) as! SCNNode
             bubble.position = SCNVector3(x: bubble.position.x, y: bubble.position.y + 0.05, z: bubble.position.z + 0.05)
             if( bubble.position.y > penguin.position.y + 10 ){
                 bubble.removeFromParentNode()
-                cycle_bubble_array.removeObject(bubble)
+                cycle_bubble_array.remove(bubble)
             }
         }
     }
     
+    func eatEfect( node p_node:SCNNode )
+    {
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
+        let node_x:Float = p_node.position.x;
+        let node_y:Float = p_node.position.y;
+        let node_z:Float = p_node.position.z;
+        // remove object
+        p_node.position.z = 21;
+        
+        // ring setting
+        let ring:SCNScene = SCNScene(named: "art.scnassets/ring_new.dae")!
+        let ring_node:SCNNode = ring.rootNode.childNode(withName: "ring_new", recursively: false)!
+        ring_node.position = SCNVector3(node_x, node_y + 1.5, node_z + 5)
+        
+        // point text setting
+        let text:SCNScene = SCNScene(named: "art.scnassets/point_ika.dae")!
+        let text_node:SCNNode = text.rootNode.childNode(withName: "ikapoint", recursively: false)!
+        text_node.position = SCNVector3(node_x, node_y + 2.0, node_z + 5)
+        text_node.scale = SCNVector3(x: 0.4, y: 0.4, z: 0.4)
+        
+        // add view
+        scene.rootNode.addChildNode(ring_node)
+        scene.rootNode.addChildNode(text_node)
+        
+        // plus point
+        self.point += 200
+        
+        // set combo
+        self.combo += 1
+        
+        _ = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(GameViewController.resetCombo), userInfo: nil, repeats: false)
+        
+        var combo_node:SCNNode = SCNNode();
+        if( self.combo > 1 ){
+            self.point += 200
+            let combo:SCNScene = SCNScene(named: "art.scnassets/combo.dae")!
+            combo_node = combo.rootNode.childNode(withName: "combo", recursively: false)!
+            combo_node.position = SCNVector3(penguin.position.x + 1.0, penguin.position.y + 1.75, penguin.position.z + 5)
+            combo_node.scale = SCNVector3(0.2, 0.2, 0.2)
+            scene.rootNode.addChildNode(combo_node)
+            
+        }
+        if( self.combo > 3 && self.trans_flag == false){
+            self.enalbleGoldState()
+        }
+        
+        // set point
+        let str:NSMutableString = NSMutableString()
+        str.appendFormat("%d", self.point)
+        str.append(" points")
+        self.points.text = str as String
+        
+        // set animation
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 1.0
+        ring_node.scale = SCNVector3(1.0, 1.0, 1.0)
+        text_node.scale = SCNVector3(0.8, 0.8, 0.8)
+        if( self.combo > 1 ){
+            combo_node.scale = SCNVector3(0.8, 0.8, 0.8)
+        }
+        SCNTransaction.commit()
+        
+        
+        _ = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(GameViewController.removeRing), userInfo: nil, repeats: false)
+    }
+    
+    func resetCombo(){
+        self.combo = 0
+    }
+    
+    func removeRing(){
+        let ring_node:SCNNode? = scene.rootNode.childNode(withName: "ring_new", recursively: false)
+        let text_node:SCNNode? = scene.rootNode.childNode(withName: "ikapoint", recursively: false)
+        let combo_node:SCNNode? = scene.rootNode.childNode(withName: "combo", recursively: false)
+        if( ring_node != nil ){
+            ring_node?.removeFromParentNode()
+        }
+        if( text_node != nil){
+            text_node?.removeFromParentNode()
+        }
+        if( combo_node != nil ){
+            combo_node?.removeFromParentNode()
+        }
+    }
+
+    
     func minusEfect()
     {
-        let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
         self.point -= 50
         // set point
         let str:NSMutableString = NSMutableString()
         str.appendFormat("%d", self.point)
-        str.appendString(" points")
+        str.append(" points")
         self.points.text = str as String
         
         // set minus
         let red_ring:SCNScene = SCNScene(named: "art.scnassets/ring_new.dae")!
-        let red_ring_node:SCNNode = red_ring.rootNode.childNodeWithName("ring_new", recursively: false)!
+        let red_ring_node:SCNNode = red_ring.rootNode.childNode(withName: "ring_new", recursively: false)!
         red_ring_node.position = SCNVector3(penguin.position.x, penguin.position.y + 1.5, penguin.position.z + 5)
         let red_ring_material:SCNMaterial = SCNMaterial()
-        red_ring_material.diffuse.contents = UIColor.redColor()
+        red_ring_material.diffuse.contents = UIColor.red
         red_ring_node.geometry?.materials = [red_ring_material]
         
         // point text setting
         let text:SCNScene = SCNScene(named: "art.scnassets/point_minus.dae")!
-        let text_node:SCNNode = text.rootNode.childNodeWithName("minus", recursively: false)!
+        let text_node:SCNNode = text.rootNode.childNode(withName: "minus", recursively: false)!
         text_node.position = SCNVector3(penguin.position.x, penguin.position.y + 2.0, penguin.position.z + 5)
-        text_node.scale = SCNVector3(x: 0.2, y: 0.2, z: 0.2)
+        text_node.scale = SCNVector3(x: 0.4, y: 0.4, z: 0.4)
         
         // set 3d view
         self.scene.rootNode.addChildNode(red_ring_node)
@@ -504,21 +625,21 @@ class GameViewController: UIViewController {
         
         // set animation
         SCNTransaction.begin()
-        SCNTransaction.setAnimationDuration(1.0)
-        red_ring_node.scale = SCNVector3(0.5, 0.5, 0.5)
-        text_node.scale = SCNVector3(0.4, 0.4, 0.4)
+        SCNTransaction.animationDuration = 1.0
+        red_ring_node.scale = SCNVector3(1.0, 1.0, 1.0)
+        text_node.scale = SCNVector3(0.8, 0.8, 0.8)
         SCNTransaction.commit()
         
         self.displayCollisionBanner()
    
-        _ = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: "removeMinus", userInfo: nil, repeats: false)
-        _ = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: "setYesCancelMinus", userInfo: nil, repeats: false)
-        _ = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: "setNoCancelMinus", userInfo: nil, repeats: false)
+        _ = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(GameViewController.removeMinus), userInfo: nil, repeats: false)
+        _ = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(GameViewController.setYesCancelMinus), userInfo: nil, repeats: false)
+        _ = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(GameViewController.setNoCancelMinus), userInfo: nil, repeats: false)
     }
     
     func removeMinus(){
-        let ring_node:SCNNode? = scene.rootNode.childNodeWithName("ring_new", recursively: false)
-        let text_node:SCNNode? = scene.rootNode.childNodeWithName("minus", recursively: false)
+        let ring_node:SCNNode? = scene.rootNode.childNode(withName: "ring_new", recursively: false)
+        let text_node:SCNNode? = scene.rootNode.childNode(withName: "minus", recursively: false)
         if( ring_node != nil ){
             ring_node?.removeFromParentNode()
         }
@@ -528,9 +649,9 @@ class GameViewController: UIViewController {
     }
     
     // penguin direction change
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         let first_touch:UITouch = touches.first!
-        let point_touch:CGPoint = first_touch.locationInView(self.view)
+        let point_touch:CGPoint = first_touch.location(in: self.view)
         if( 0 < point_touch.x && point_touch.x < 200 && 200 < point_touch.y && point_touch.y < 400){
             
             // set dx dy
@@ -540,11 +661,11 @@ class GameViewController: UIViewController {
             // set move btn
             self.move_btn.frame = CGRect(x: 50 - dx, y: 250 - dy, width: 64, height: 64)
             
-            let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
+            let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
             let rotation:SCNVector4 = SCNVector4(dx / 300 * -1, 1, dy / 300 * -1, M_PI)
             
-            var p_new_x:Double = Double(penguin.position.x) - dx / 100
-            var p_new_y:Double = Double(penguin.position.y) - dy / 100
+            var p_new_x:Double = Double(penguin.position.x) - dx / Double(self.move_divide)
+            var p_new_y:Double = Double(penguin.position.y) - dy / Double(self.move_divide)
             
             // generate bubble
             if( ( dx > 10 || dy > 10 ) && self.bubble_flag == false){
@@ -571,22 +692,30 @@ class GameViewController: UIViewController {
             self.depth = Int(self.calculateDepth(p_new_y))
             let str:NSMutableString = NSMutableString()
             str.appendFormat("%d", self.depth)
-            str.appendString(" m")
+            str.append(" m")
             self.depth_label.text = str as String
             
+            var gold_ring_instance:SCNNode?
+            if( gold_ring != nil ){
+                gold_ring_instance = self.scene.rootNode.childNode(withName: "ring_gold", recursively: false)!
+            }
             // set animation
             SCNTransaction.begin()
             penguin.rotation = rotation
             penguin.position = position
             self.cameraNode.position = SCNVector3(penguin.position.x, penguin.position.y + 2, penguin.position.z + 13)
+            if( gold_ring != nil ){
+                gold_ring_instance!.position = SCNVector3(penguin.position.x, penguin.position.y, penguin.position.z)
+            }
             SCNTransaction.commit()
             
             // set lightnodes
             self.lightNode.position = SCNVector3(penguin.position.x, penguin.position.y + 40, penguin.position.z)
             self.ambientLightNode.position = SCNVector3(penguin.position.x, penguin.position.y + 10, penguin.position.z + 15)
             
+            
         }else if( 400 < point_touch.x && point_touch.x < 600 && 32 < point_touch.y && point_touch.y < 232 ){
-            let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
+            let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
             
             // set dx dy
             let dx:Double = Double( point_touch.x - CGFloat(533) )
@@ -610,8 +739,8 @@ class GameViewController: UIViewController {
         }
     }
     
-    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
         self.cameraNode.position = SCNVector3(penguin.position.x, penguin.position.y + 2, penguin.position.z + 13)
         self.cameraNode.rotation = SCNVector4(0, 0, 0, M_PI)
         self.camera_btn.frame = CGRect(x: 500, y: 100, width: 64, height: 64)
@@ -619,34 +748,34 @@ class GameViewController: UIViewController {
     
     // generate bubble
     func generateBubble(){
-        let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
         
         let bubble:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-        let bubble_node:SCNNode = bubble.rootNode.childNodeWithName("bubble", recursively: false)!
+        let bubble_node:SCNNode = bubble.rootNode.childNode(withName: "bubble", recursively: false)!
         
         let bubble2:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-        let bubble_node2:SCNNode = bubble2.rootNode.childNodeWithName("bubble", recursively: false)!
+        let bubble_node2:SCNNode = bubble2.rootNode.childNode(withName: "bubble", recursively: false)!
         
         let bubble3:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-        let bubble_node3:SCNNode = bubble3.rootNode.childNodeWithName("bubble", recursively: false)!
+        let bubble_node3:SCNNode = bubble3.rootNode.childNode(withName: "bubble", recursively: false)!
         
         let bubble4:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-        let bubble_node4:SCNNode = bubble4.rootNode.childNodeWithName("bubble", recursively: false)!
+        let bubble_node4:SCNNode = bubble4.rootNode.childNode(withName: "bubble", recursively: false)!
         
         let bubble5:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-        let bubble_node5:SCNNode = bubble5.rootNode.childNodeWithName("bubble", recursively: false)!
+        let bubble_node5:SCNNode = bubble5.rootNode.childNode(withName: "bubble", recursively: false)!
         
         let bubble6:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-        let bubble_node6:SCNNode = bubble6.rootNode.childNodeWithName("bubble", recursively: false)!
+        let bubble_node6:SCNNode = bubble6.rootNode.childNode(withName: "bubble", recursively: false)!
         
         let bubble7:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-        let bubble_node7:SCNNode = bubble7.rootNode.childNodeWithName("bubble", recursively: false)!
+        let bubble_node7:SCNNode = bubble7.rootNode.childNode(withName: "bubble", recursively: false)!
         
         let bubble8:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-        let bubble_node8:SCNNode = bubble8.rootNode.childNodeWithName("bubble", recursively: false)!
+        let bubble_node8:SCNNode = bubble8.rootNode.childNode(withName: "bubble", recursively: false)!
         
         let bubble9:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-        let bubble_node9:SCNNode = bubble9.rootNode.childNodeWithName("bubble", recursively: false)!
+        let bubble_node9:SCNNode = bubble9.rootNode.childNode(withName: "bubble", recursively: false)!
 
         
         bubble_node.scale = SCNVector3(0.03, 0.03, 0.03)
@@ -683,15 +812,15 @@ class GameViewController: UIViewController {
         bubble_node8.opacity = 0.3
         bubble_node9.opacity = 0.3
         
-        bubble_array.addObject(bubble_node)
-        bubble_array.addObject(bubble_node2)
-        bubble_array.addObject(bubble_node3)
-        bubble_array.addObject(bubble_node4)
-        bubble_array.addObject(bubble_node5)
-        bubble_array.addObject(bubble_node6)
-        bubble_array.addObject(bubble_node7)
-        bubble_array.addObject(bubble_node8)
-        bubble_array.addObject(bubble_node9)
+        bubble_array.add(bubble_node)
+        bubble_array.add(bubble_node2)
+        bubble_array.add(bubble_node3)
+        bubble_array.add(bubble_node4)
+        bubble_array.add(bubble_node5)
+        bubble_array.add(bubble_node6)
+        bubble_array.add(bubble_node7)
+        bubble_array.add(bubble_node8)
+        bubble_array.add(bubble_node9)
         
         self.scene.rootNode.addChildNode(bubble_node)
         self.scene.rootNode.addChildNode(bubble_node2)
@@ -703,30 +832,30 @@ class GameViewController: UIViewController {
         self.scene.rootNode.addChildNode(bubble_node8)
         self.scene.rootNode.addChildNode(bubble_node9)
 
-        _ = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: "setYesBubble", userInfo: nil, repeats: false)
-        _ = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: "setNoBubble", userInfo: nil, repeats: false)
+        _ = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(GameViewController.setYesBubble), userInfo: nil, repeats: false)
+        _ = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(GameViewController.setNoBubble), userInfo: nil, repeats: false)
         
         
     }
     
     func generateCycleBubble(){
         for index in 1...10 {
-            let penguin:SCNNode = self.scene.rootNode.childNodeWithName("Cube", recursively: false)!
+            let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
             
             let bubble:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-            let bubble_node:SCNNode = bubble.rootNode.childNodeWithName("bubble", recursively: false)!
+            let bubble_node:SCNNode = bubble.rootNode.childNode(withName: "bubble", recursively: false)!
             
             let bubble2:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-            let bubble_node2:SCNNode = bubble2.rootNode.childNodeWithName("bubble", recursively: false)!
+            let bubble_node2:SCNNode = bubble2.rootNode.childNode(withName: "bubble", recursively: false)!
             
             let bubble3:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-            let bubble_node3:SCNNode = bubble3.rootNode.childNodeWithName("bubble", recursively: false)!
+            let bubble_node3:SCNNode = bubble3.rootNode.childNode(withName: "bubble", recursively: false)!
             
             let bubble4:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-            let bubble_node4:SCNNode = bubble4.rootNode.childNodeWithName("bubble", recursively: false)!
+            let bubble_node4:SCNNode = bubble4.rootNode.childNode(withName: "bubble", recursively: false)!
             
             let bubble5:SCNScene = SCNScene(named: "art.scnassets/bubble.dae")!
-            let bubble_node5:SCNNode = bubble5.rootNode.childNodeWithName("bubble", recursively: false)!
+            let bubble_node5:SCNNode = bubble5.rootNode.childNode(withName: "bubble", recursively: false)!
             
             bubble_node.scale = SCNVector3(0.02, 0.02, 0.02)
             bubble_node2.scale = SCNVector3(0.02, 0.02, 0.02)
@@ -750,11 +879,11 @@ class GameViewController: UIViewController {
             bubble_node4.opacity = 0.4
             bubble_node5.opacity = 0.4
             
-            cycle_bubble_array.addObject(bubble_node)
-            cycle_bubble_array.addObject(bubble_node2)
-            cycle_bubble_array.addObject(bubble_node3)
-            cycle_bubble_array.addObject(bubble_node4)
-            cycle_bubble_array.addObject(bubble_node5)
+            cycle_bubble_array.add(bubble_node)
+            cycle_bubble_array.add(bubble_node2)
+            cycle_bubble_array.add(bubble_node3)
+            cycle_bubble_array.add(bubble_node4)
+            cycle_bubble_array.add(bubble_node5)
             
             self.scene.rootNode.addChildNode(bubble_node)
             self.scene.rootNode.addChildNode(bubble_node2)
@@ -765,7 +894,7 @@ class GameViewController: UIViewController {
     }
     
     // calculate depth
-    func calculateDepth( y:Double ) -> Double{
+    func calculateDepth( _ y:Double ) -> Double{
         return abs(y - Double(40))
     }
     
@@ -790,7 +919,8 @@ class GameViewController: UIViewController {
     // eat
     func eatState(){
         self.eat_flag = true
-         _ = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: "notEatState", userInfo: nil, repeats: false)
+        self.eat_timer.invalidate()
+        self.eat_timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(GameViewController.notEatState), userInfo: nil, repeats: false)
     }
     
     // cancel eat
@@ -798,20 +928,71 @@ class GameViewController: UIViewController {
         self.eat_flag = false
     }
     
+    // enalble gold mode
+    func enalbleGoldState(){
+        self.trans_flag = true
+        self.move_divide = 50;
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
+        let gold_material:SCNMaterial = SCNMaterial()
+        gold_material.diffuse.contents = UIColor.yellow
+        gold_material.transparency = 0.2
+        self.penguin_base_material = (penguin.geometry?.materials)!
+        var gold_style:[SCNMaterial] = self.penguin_base_material
+        gold_style.removeFirst()
+        gold_style.append(gold_material)
+        penguin.geometry?.materials = gold_style
+        // ring setting
+        let ring:SCNScene = SCNScene(named: "art.scnassets/ring_gold.dae")!
+        self.gold_ring = ring.rootNode.childNode(withName: "ring_gold", recursively: false)!
+        self.gold_ring!.position = SCNVector3(penguin.position.x, penguin.position.y, penguin.position.z)
+        let green_ring_material:SCNMaterial = SCNMaterial()
+        green_ring_material.diffuse.contents = UIColor.green
+        self.gold_ring!.geometry?.materials = [green_ring_material]
+        self.scene.rootNode.addChildNode(self.gold_ring!)
+        displayTransBanner()
+        self.gold_ring_timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(GameViewController.animationGoldRing), userInfo: nil, repeats: true)
+        
+        _ = Timer.scheduledTimer(timeInterval: 15.0, target: self, selector: #selector(GameViewController.cancelGoldState), userInfo: nil, repeats: false)
+    }
     
-    override func shouldAutorotate() -> Bool {
+    // animation gold ring
+    func animationGoldRing(){
+        let gold_ring_instance:SCNNode? = self.scene.rootNode.childNode(withName: "ring_gold", recursively: false)!
+        gold_ring_instance!.scale = SCNVector3(4.0, 4.0, 4.0)
+        gold_ring_instance!.opacity = 0.5
+        // set animation
+        SCNTransaction.begin()
+        SCNTransaction.animationDuration = 1.0
+        gold_ring_instance!.opacity = 0.0
+        gold_ring_instance!.scale = SCNVector3(12.0, 12.0, 12.0)
+        SCNTransaction.commit()
+    }
+    
+    // cancel gold mode
+    func cancelGoldState(){
+        self.trans_flag = false
+        self.move_divide = 100;
+        let penguin:SCNNode = self.scene.rootNode.childNode(withName: "Cube", recursively: false)!
+        penguin.geometry?.materials = self.penguin_base_material
+        let gold_ring_instance:SCNNode? = self.scene.rootNode.childNode(withName: "ring_gold", recursively: false)!
+        gold_ring_instance?.removeFromParentNode()
+        self.gold_ring_timer.invalidate()
+        self.gold_ring = nil
+    }
+    
+    override var shouldAutorotate : Bool {
         return true
     }
     
-    override func prefersStatusBarHidden() -> Bool {
+    override var prefersStatusBarHidden : Bool {
         return true
     }
     
-    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-        if UIDevice.currentDevice().userInterfaceIdiom == .Phone {
-            return .AllButUpsideDown
+    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            return .allButUpsideDown
         } else {
-            return .All
+            return .all
         }
     }
     

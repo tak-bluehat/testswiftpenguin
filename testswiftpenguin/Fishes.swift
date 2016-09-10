@@ -35,9 +35,9 @@ class Fishes : NSObject {
         
         //_ = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: "changeDelta", userInfo: nil, repeats: true)
         //_ = NSTimer.scheduledTimerWithTimeInterval(0.05, target: self, selector: "move", userInfo: nil, repeats: true)
-        let displayLink = CADisplayLink(target: self, selector: "move")
+        let displayLink = CADisplayLink(target: self, selector: #selector(Fishes.move))
         displayLink.frameInterval = 1
-        displayLink.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
+        displayLink.add(to: RunLoop.current, forMode: RunLoopMode.defaultRunLoopMode)
 
     }
     
@@ -56,23 +56,22 @@ class Fishes : NSObject {
         
         for _ in 1...amount {
             let iwashi:SCNScene = SCNScene(named: "art.scnassets/iwashi_new.dae")!
-            let iwashi_node:SCNNode = iwashi.rootNode.childNodeWithName("iwashi_new", recursively: false)!
+            let iwashi_node:SCNNode = iwashi.rootNode.childNode(withName: "iwashi_new", recursively: false)!
             
             iwashi_node.position = SCNVector3(
                 ( x + (Double( arc4random_uniform(10) ) - 5 ) / 5  ),
                 ( y + (Double( arc4random_uniform(10) ) - 5 ) / 5  ),
                 ( z +  (Double( arc4random_uniform(10) ) - 5 ) / 5 )
             )
-            
-            fish_array.addObject(iwashi_node)
+            fish_array.add(iwashi_node)
             
             scene.rootNode.addChildNode(iwashi_node)
         }
     }
     
     func move(){
-        for var index = 0; index < fish_array.count; index++ {
-            let fish:SCNNode = fish_array.objectAtIndex(index) as! SCNNode
+        for index in 0 ..< fish_array.count {
+            let fish:SCNNode = fish_array.object(at: index) as! SCNNode
             fish.position = SCNVector3(fish.position.x, fish.position.y, fish.position.z + 0.3)
             
             if(
@@ -85,19 +84,19 @@ class Fishes : NSObject {
                 let fish_y:Float = fish.position.y;
                 let fish_z:Float = fish.position.z;
                 // remove object
-                fish_array.removeObject(fish)
+                fish_array.remove(fish)
                 fish.removeFromParentNode()
                 
                 // ring setting
                 let ring:SCNScene = SCNScene(named: "art.scnassets/ring_new.dae")!
-                let ring_node:SCNNode = ring.rootNode.childNodeWithName("ring_new", recursively: false)!
+                let ring_node:SCNNode = ring.rootNode.childNode(withName: "ring_new", recursively: false)!
                 ring_node.position = SCNVector3(fish_x, fish_y + 1.5, fish_z + 5)
                 
                 // point text setting
                 let text:SCNScene = SCNScene(named: "art.scnassets/point.dae")!
-                let text_node:SCNNode = text.rootNode.childNodeWithName("Text", recursively: false)!
+                let text_node:SCNNode = text.rootNode.childNode(withName: "Text", recursively: false)!
                 text_node.position = SCNVector3(fish_x, fish_y + 2.0, fish_z + 5)
-                text_node.scale = SCNVector3(x: 0.2, y: 0.2, z: 0.2)
+                text_node.scale = SCNVector3(x: 0.4, y: 0.4, z: 0.4)
                 
                 // add view
                 scene.rootNode.addChildNode(ring_node)
@@ -107,43 +106,46 @@ class Fishes : NSObject {
                 controller.point += 100
                 
                 // set combo
-                controller.combo++
+                controller.combo += 1
                 
-                _ = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: "resetCombo", userInfo: nil, repeats: false)
+                _ = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(Fishes.resetCombo), userInfo: nil, repeats: false)
                 
                 var combo_node:SCNNode = SCNNode();
                 if( controller.combo > 1 ){
                     controller.point += 100
                     let combo:SCNScene = SCNScene(named: "art.scnassets/combo.dae")!
-                    combo_node = combo.rootNode.childNodeWithName("combo", recursively: false)!
+                    combo_node = combo.rootNode.childNode(withName: "combo", recursively: false)!
                     combo_node.position = SCNVector3(penguin.position.x + 1.0, penguin.position.y + 1.75, penguin.position.z + 5)
-                    combo_node.scale = SCNVector3(0.2, 0.2, 0.2)
+                    combo_node.scale = SCNVector3(0.4, 0.4, 0.4)
                     scene.rootNode.addChildNode(combo_node)
                     
+                }
+                if( controller.combo > 3 && controller.trans_flag == false){
+                    controller.enalbleGoldState()
                 }
                 
                 // set point
                 let str:NSMutableString = NSMutableString()
                 str.appendFormat("%d", controller.point)
-                str.appendString(" points")
+                str.append(" points")
                 controller.points.text = str as String
                 
                 // set animation
                 SCNTransaction.begin()
-                SCNTransaction.setAnimationDuration(1.0)
-                ring_node.scale = SCNVector3(0.5, 0.5, 0.5)
-                text_node.scale = SCNVector3(0.4, 0.4, 0.4)
+                SCNTransaction.animationDuration = 1.0
+                ring_node.scale = SCNVector3(1.0, 1.0, 1.0)
+                text_node.scale = SCNVector3(0.8, 0.8, 0.8)
                 if( controller.combo > 1 ){
-                    combo_node.scale = SCNVector3(0.4, 0.4, 0.4)
+                    combo_node.scale = SCNVector3(0.8, 0.8, 0.8)
                 }
                 SCNTransaction.commit()
                 
-                _ = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: "removeRing", userInfo: nil, repeats: false)
+                _ = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(Fishes.removeRing), userInfo: nil, repeats: false)
                 
                 
                 
             }else if( fish.position.z > 20 ){
-                fish_array.removeObject(fish)
+                fish_array.remove(fish)
                 fish.removeFromParentNode()
             }
         }
@@ -155,9 +157,9 @@ class Fishes : NSObject {
     }
         
     func removeRing(){
-        let ring_node:SCNNode? = scene.rootNode.childNodeWithName("ring_new", recursively: false)
-        let text_node:SCNNode? = scene.rootNode.childNodeWithName("Text", recursively: false)
-        let combo_node:SCNNode? = scene.rootNode.childNodeWithName("combo", recursively: false)
+        let ring_node:SCNNode? = scene.rootNode.childNode(withName: "ring_new", recursively: false)
+        let text_node:SCNNode? = scene.rootNode.childNode(withName: "Text", recursively: false)
+        let combo_node:SCNNode? = scene.rootNode.childNode(withName: "combo", recursively: false)
         if( ring_node != nil ){
             ring_node?.removeFromParentNode()
         }

@@ -42,6 +42,8 @@
 		3BA336F71C3540B200BF411A /* app_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 3BA336F41C3540B200BF411A /* app_icon.png */; };
 		3BA336F81C3540B200BF411A /* app_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3BA336F51C3540B200BF411A /* app_icon@2x.png */; };
 		3BA336F91C3540B200BF411A /* app_icon@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3BA336F61C3540B200BF411A /* app_icon@3x.png */; };
+		3BCB6E041C6CBCAA00150B3A /* banner_trans.png in Resources */ = {isa = PBXBuildFile; fileRef = 3BCB6E021C6CBCAA00150B3A /* banner_trans.png */; };
+		3BCB6E051C6CBCAA00150B3A /* banner_trans@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3BCB6E031C6CBCAA00150B3A /* banner_trans@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -103,6 +105,8 @@
 		3BA336F41C3540B200BF411A /* app_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = app_icon.png; sourceTree = "<group>"; };
 		3BA336F51C3540B200BF411A /* app_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "app_icon@2x.png"; sourceTree = "<group>"; };
 		3BA336F61C3540B200BF411A /* app_icon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "app_icon@3x.png"; sourceTree = "<group>"; };
+		3BCB6E021C6CBCAA00150B3A /* banner_trans.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = banner_trans.png; sourceTree = "<group>"; };
+		3BCB6E031C6CBCAA00150B3A /* banner_trans@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "banner_trans@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -161,6 +165,8 @@
 				3B9008E21C33B5F400F4B6CF /* Main.storyboard */,
 				3B47D53D1C43B1BB00A3F9C9 /* banner_ami.png */,
 				3B47D53E1C43B1BB00A3F9C9 /* banner_ami@2x.png */,
+				3BCB6E021C6CBCAA00150B3A /* banner_trans.png */,
+				3BCB6E031C6CBCAA00150B3A /* banner_trans@2x.png */,
 				3B47D53F1C43B1BB00A3F9C9 /* banner_collission.png */,
 				3B47D5401C43B1BB00A3F9C9 /* banner_collission@2x.png */,
 				3B47D5411C43B1BB00A3F9C9 /* banner_loading.png */,
@@ -278,15 +284,18 @@
 					3B9008D81C33B5F400F4B6CF = {
 						CreatedOnToolsVersion = 7.2;
 						DevelopmentTeam = W83VJ78C4W;
+						LastSwiftMigration = 0800;
 					};
 					3B9008EE1C33B5F400F4B6CF = {
 						CreatedOnToolsVersion = 7.2;
 						DevelopmentTeam = W83VJ78C4W;
+						LastSwiftMigration = 0800;
 						TestTargetID = 3B9008D81C33B5F400F4B6CF;
 					};
 					3B9008F91C33B5F400F4B6CF = {
 						CreatedOnToolsVersion = 7.2;
 						DevelopmentTeam = W83VJ78C4W;
+						LastSwiftMigration = 0800;
 						TestTargetID = 3B9008D81C33B5F400F4B6CF;
 					};
 				};
@@ -337,9 +346,11 @@
 				3B95357C1C37F60F00571D04 /* eat_btn@2x.png in Resources */,
 				3B47D54A1C43B1BB00A3F9C9 /* banner_loading@2x.png in Resources */,
 				3BA336F71C3540B200BF411A /* app_icon.png in Resources */,
+				3BCB6E051C6CBCAA00150B3A /* banner_trans@2x.png in Resources */,
 				3B9535791C37F60F00571D04 /* camera_btn.png in Resources */,
 				3B47D5491C43B1BB00A3F9C9 /* banner_loading.png in Resources */,
 				3BA336F81C3540B200BF411A /* app_icon@2x.png in Resources */,
+				3BCB6E041C6CBCAA00150B3A /* banner_trans.png in Resources */,
 				3B9009151C33BEE300F4B6CF /* base_main_btn@2x.png in Resources */,
 				3B9535811C37F7C900571D04 /* eat_btn_press.png in Resources */,
 				3B47D5461C43B1BB00A3F9C9 /* banner_ami@2x.png in Resources */,
@@ -512,10 +523,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = W83VJ78C4W;
 				INFOPLIST_FILE = testswiftpenguin/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.midalort.testswiftpenguin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -523,10 +538,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = W83VJ78C4W;
 				INFOPLIST_FILE = testswiftpenguin/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.midalort.testswiftpenguin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -539,6 +558,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.midalort.testswiftpenguinTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/testswiftpenguin.app/testswiftpenguin";
 			};
 			name = Debug;
@@ -551,6 +571,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.midalort.testswiftpenguinTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/testswiftpenguin.app/testswiftpenguin";
 			};
 			name = Release;
@@ -563,6 +584,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.midalort.testswiftpenguinUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = testswiftpenguin;
 				USES_XCTRUNNER = YES;
 			};
@@ -575,6 +597,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.midalort.testswiftpenguinUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_TARGET_NAME = testswiftpenguin;
 				USES_XCTRUNNER = YES;
 			};
