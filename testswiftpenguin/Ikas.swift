@@ -15,16 +15,15 @@ class Ikas : NSObject {
     var scene:SCNScene
     var penguin:SCNNode
     var controller:GameViewController
-    var ika_array:NSMutableArray
+    var ika_array:LinkedList<SCNNode>
     var dx:Double
     var dy:Double
     
     init(s_scene: SCNScene, penguin_node: SCNNode, game_controller: GameViewController){
-        
         self.scene = s_scene
         self.penguin = penguin_node
         self.controller = game_controller
-        self.ika_array = NSMutableArray()
+        self.ika_array = LinkedList<SCNNode>()
         self.dx = ( Double(arc4random_uniform(10)) - 5.0 ) / 100
         self.dy = ( Double(arc4random_uniform(10)) - 5.0 ) / 100
         
@@ -36,7 +35,7 @@ class Ikas : NSObject {
         //_ = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: "changeDelta", userInfo: nil, repeats: true)
         //_ = NSTimer.scheduledTimerWithTimeInterval(0.05, target: self, selector: "move", userInfo: nil, repeats: true)
         let displayLink = CADisplayLink(target: self, selector: #selector(Ikas.move))
-        displayLink.frameInterval = 1
+        displayLink.preferredFramesPerSecond = 30
         displayLink.add(to: RunLoop.current, forMode: RunLoopMode.defaultRunLoopMode)
         
     }
@@ -50,13 +49,15 @@ class Ikas : NSObject {
         let amount:Int = Int(arc4random_uniform(2)) + 3
         
         
-        let x:Double = Double( penguin.position.x ) + Double( arc4random_uniform(10) ) - 5
-        let y:Double = Double( penguin.position.y ) + Double( arc4random_uniform(10) ) - 5
+        let x:Double = Double( arc4random_uniform(150) ) - 75
+        let y:Double = Double( arc4random_uniform(20) ) - 10
         let z:Double = -40
         
+        let ika:SCNScene = SCNScene(named: "art.scnassets/ika.dae")!
+        let ika_node_base:SCNNode = ika.rootNode.childNode(withName: "ika", recursively: false)!
+        
         for _ in 1...amount {
-            let ika:SCNScene = SCNScene(named: "art.scnassets/ika.dae")!
-            let ika_node:SCNNode = ika.rootNode.childNode(withName: "ika", recursively: false)!
+            let ika_node:SCNNode = ika_node_base.clone()
             
             ika_node.position = SCNVector3(
                 ( x + (Double( arc4random_uniform(10) ) - 5 ) / 5 ),
@@ -64,16 +65,17 @@ class Ikas : NSObject {
                 ( z +  (Double( arc4random_uniform(10) ) - 5 ) / 5 )
             )
             
-            ika_array.add(ika_node)
+            ika_array.append(value: ika_node)
             
             scene.rootNode.addChildNode(ika_node)
         }
     }
     
     func move(){
-        for index in 0 ..< ika_array.count {
-            let ika:SCNNode = ika_array.object(at: index) as! SCNNode
-            ika.position = SCNVector3(ika.position.x, ika.position.y, ika.position.z + 0.2)
+        var ika_node:LinkedListNode<SCNNode>? = ika_array.first
+        while( ika_node != nil ){
+            let ika:SCNNode! = ika_node?.value
+            ika.position = SCNVector3(ika.position.x, ika.position.y, ika.position.z + 0.4)
             
             if(
                 fabs(ika.position.z - penguin.position.z) < 1
@@ -85,9 +87,9 @@ class Ikas : NSObject {
                     let ika_y:Float = ika.position.y;
                     let ika_z:Float = ika.position.z;
                     // remove object
-                    ika_array.remove(ika)
                     ika.removeFromParentNode()
-                    
+                    ika_array.removeNode(node: ika_node!)
+                
                     // ring setting
                     let ring:SCNScene = SCNScene(named: "art.scnassets/ring_new.dae")!
                     let ring_node:SCNNode = ring.rootNode.childNode(withName: "ring_new", recursively: false)!
@@ -147,9 +149,10 @@ class Ikas : NSObject {
                     
                     
             }else if( ika.position.z > 20 ){
-                ika_array.remove(ika)
                 ika.removeFromParentNode()
+                ika_array.removeNode(node: ika_node!)
             }
+            ika_node = ika_node?.next
         }
         
         

@@ -15,7 +15,7 @@ class Fishes : NSObject {
     var scene:SCNScene
     var penguin:SCNNode
     var controller:GameViewController
-    var fish_array:NSMutableArray
+    var fish_array:LinkedList<SCNNode>
     var dx:Double
     var dy:Double
     
@@ -24,7 +24,7 @@ class Fishes : NSObject {
         self.scene = s_scene
         self.penguin = penguin_node
         self.controller = game_controller
-        self.fish_array = NSMutableArray()
+        self.fish_array = LinkedList<SCNNode>()
         self.dx = ( Double(arc4random_uniform(10)) - 5.0 ) / 100
         self.dy = ( Double(arc4random_uniform(10)) - 5.0 ) / 100
         
@@ -36,7 +36,7 @@ class Fishes : NSObject {
         //_ = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: "changeDelta", userInfo: nil, repeats: true)
         //_ = NSTimer.scheduledTimerWithTimeInterval(0.05, target: self, selector: "move", userInfo: nil, repeats: true)
         let displayLink = CADisplayLink(target: self, selector: #selector(Fishes.move))
-        displayLink.frameInterval = 1
+        displayLink.preferredFramesPerSecond = 30
         displayLink.add(to: RunLoop.current, forMode: RunLoopMode.defaultRunLoopMode)
 
     }
@@ -50,29 +50,31 @@ class Fishes : NSObject {
         let amount:Int = Int(arc4random_uniform(5)) + 5
         
         
-        let x:Double = Double( penguin.position.x ) + Double( arc4random_uniform(10) ) - 5
-        let y:Double = Double( penguin.position.y ) + Double( arc4random_uniform(10) ) - 5
+        let x:Double = Double( arc4random_uniform(150) ) - 75
+        let y:Double = Double( arc4random_uniform(20) ) - 10
         let z:Double = -40
         
+        let iwashi:SCNScene = SCNScene(named: "art.scnassets/iwashi_new.dae")!
+        let iwashi_node_base:SCNNode = iwashi.rootNode.childNode(withName: "iwashi_new", recursively: false)!
+        
         for _ in 1...amount {
-            let iwashi:SCNScene = SCNScene(named: "art.scnassets/iwashi_new.dae")!
-            let iwashi_node:SCNNode = iwashi.rootNode.childNode(withName: "iwashi_new", recursively: false)!
-            
+            let iwashi_node:SCNNode = iwashi_node_base.clone()
             iwashi_node.position = SCNVector3(
                 ( x + (Double( arc4random_uniform(10) ) - 5 ) / 5  ),
                 ( y + (Double( arc4random_uniform(10) ) - 5 ) / 5  ),
                 ( z +  (Double( arc4random_uniform(10) ) - 5 ) / 5 )
             )
-            fish_array.add(iwashi_node)
+            fish_array.append(value: iwashi_node)
             
             scene.rootNode.addChildNode(iwashi_node)
         }
     }
     
     func move(){
-        for index in 0 ..< fish_array.count {
-            let fish:SCNNode = fish_array.object(at: index) as! SCNNode
-            fish.position = SCNVector3(fish.position.x, fish.position.y, fish.position.z + 0.3)
+        var fish_node:LinkedListNode<SCNNode>? = fish_array.first
+        while( fish_node != nil ){
+            let fish:SCNNode! = fish_node?.value
+            fish.position = SCNVector3(fish.position.x, fish.position.y, fish.position.z + 0.6)
             
             if(
                 fabs(fish.position.z - penguin.position.z) < 1
@@ -84,8 +86,8 @@ class Fishes : NSObject {
                 let fish_y:Float = fish.position.y;
                 let fish_z:Float = fish.position.z;
                 // remove object
-                fish_array.remove(fish)
                 fish.removeFromParentNode()
+                fish_array.removeNode(node: fish_node!)
                 
                 // ring setting
                 let ring:SCNScene = SCNScene(named: "art.scnassets/ring_new.dae")!
@@ -145,9 +147,10 @@ class Fishes : NSObject {
                 
                 
             }else if( fish.position.z > 20 ){
-                fish_array.remove(fish)
                 fish.removeFromParentNode()
+                fish_array.removeNode(node: fish_node!)
             }
+            fish_node = fish_node?.next
         }
         
     }
