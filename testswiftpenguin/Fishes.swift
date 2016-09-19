@@ -54,8 +54,8 @@ class Fishes : NSObject {
         let y:Double = Double( arc4random_uniform(20) ) - 10
         let z:Double = -40
         
-        let iwashi:SCNScene = SCNScene(named: "art.scnassets/iwashi_new.dae")!
-        let iwashi_node_base:SCNNode = iwashi.rootNode.childNode(withName: "iwashi_new", recursively: false)!
+        let iwashi:SCNScene = SCNScene(named: "art.scnassets/iwashi_refine.dae")!
+        let iwashi_node_base:SCNNode = iwashi.rootNode.childNode(withName: "iwashi-body", recursively: false)!
         
         for _ in 1...amount {
             let iwashi_node:SCNNode = iwashi_node_base.clone()
