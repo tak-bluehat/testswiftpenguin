@@ -218,6 +218,7 @@ class GameViewController: UIViewController {
         
         _ = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(GameViewController.generateIwashi), userInfo: nil, repeats: true)
         _ = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(GameViewController.generateIka), userInfo: nil, repeats: true)
+        _ = Timer.scheduledTimer(timeInterval: 12.0, target: self, selector: #selector(GameViewController.generatePenguins), userInfo: nil, repeats: true)
         _ = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(GameViewController.generateShati), userInfo: nil, repeats: false)
         _ = Timer.scheduledTimer(timeInterval: 22.5, target: self, selector: #selector(GameViewController.generateAmi), userInfo: nil, repeats: false)
         _ = Timer.scheduledTimer(timeInterval: 3.0, target: self, selector: #selector(GameViewController.generateEi), userInfo: nil, repeats: false)
@@ -236,6 +237,10 @@ class GameViewController: UIViewController {
     
     func generateIka(){
         _ = Ikas(s_scene: self.scene, penguin_node: self.penguin_node, game_controller: self)
+    }
+    
+    func generatePenguins(){
+        _ = Penguins(s_scene: self.scene, s_node: self.penguin_node)
     }
     
     func generateBubble(){
