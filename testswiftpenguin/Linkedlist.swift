@@ -8,19 +8,27 @@
 
 import Foundation
 
-public class LinkedListNode<T> {
+public class LinkedListNode<T,S,x,y,z> {
     var value: T
+    var view: S
+    var move_x: x
+    var move_y: y
+    var move_z: z
     var next: LinkedListNode?
     weak var previous: LinkedListNode?
     
-    public init(value: T) {
+    public init(value: T, view: S, move_x: x, move_y: y, move_z: z) {
         self.value = value
+        self.view = view
+        self.move_x = move_x
+        self.move_y = move_y
+        self.move_z = move_z
         self.next = nil
     }
 }
 
-public class LinkedList<T> {
-    public typealias Node = LinkedListNode<T>
+public class LinkedList<T,S,x,y,z> {
+    public typealias Node = LinkedListNode<T,S,x,y,z>
     
     private var head: Node?
     
@@ -75,8 +83,8 @@ public class LinkedList<T> {
         return node!.value
     }
     
-    public func append(value: T) {
-        let newNode = Node(value: value)
+    public func append(value: T, view: S, move_x: x, move_y: y, move_z: z) {
+        let newNode = Node(value: value, view: view, move_x: move_x, move_y: move_y, move_z: move_z)
         if let lastNode = last {
             newNode.previous = lastNode
             lastNode.next = newNode
@@ -102,10 +110,10 @@ public class LinkedList<T> {
         return (prev, next)
     }
     
-    public func insert(value: T, atIndex index: Int) {
+    public func insert(value: T, view: S, move_x: x, move_y: y, move_z: z, atIndex index: Int) {
         let (prev, next) = nodesBeforeAndAfter(index: index)
         
-        let newNode = Node(value: value)
+        let newNode = Node(value: value, view: view, move_x: move_x, move_y: move_y, move_z: move_z)
         newNode.previous = prev
         newNode.next = next
         prev?.next = newNode

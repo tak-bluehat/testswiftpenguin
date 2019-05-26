@@ -15,7 +15,7 @@ class Fishes : NSObject {
     var scene:SCNScene
     var penguin:SCNNode
     var controller:GameViewController
-    var fish_array:LinkedList<SCNNode>
+    var fish_array:LinkedList<SCNNode, UIView, Float, Float, Float>
     var dx:Double
     var dy:Double
     
@@ -24,7 +24,7 @@ class Fishes : NSObject {
         self.scene = s_scene
         self.penguin = penguin_node
         self.controller = game_controller
-        self.fish_array = LinkedList<SCNNode>()
+        self.fish_array = LinkedList<SCNNode, UIView, Float, Float, Float>()
         self.dx = ( Double(arc4random_uniform(10)) - 5.0 ) / 100
         self.dy = ( Double(arc4random_uniform(10)) - 5.0 ) / 100
         
@@ -37,7 +37,7 @@ class Fishes : NSObject {
         //_ = NSTimer.scheduledTimerWithTimeInterval(0.05, target: self, selector: "move", userInfo: nil, repeats: true)
         let displayLink = CADisplayLink(target: self, selector: #selector(Fishes.move))
         displayLink.preferredFramesPerSecond = 30
-        displayLink.add(to: RunLoop.current, forMode: RunLoopMode.defaultRunLoopMode)
+        displayLink.add(to: RunLoop.current, forMode: RunLoop.Mode.default)
 
     }
     
@@ -47,39 +47,57 @@ class Fishes : NSObject {
     }
     
     func generate(){
-        let amount:Int = Int(arc4random_uniform(5)) + 5
+        let amount:Int = Int(arc4random_uniform(20)) + 30
         
         
         let x:Double = Double( arc4random_uniform(150) ) - 75
         let y:Double = Double( arc4random_uniform(20) ) - 10
-        let z:Double = -40
+        let z:Double = (Double(arc4random_uniform(40)) - 60)
         
         let iwashi:SCNScene = SCNScene(named: "art.scnassets/iwashi_refine.dae")!
         let iwashi_node_base:SCNNode = iwashi.rootNode.childNode(withName: "iwashi-body", recursively: false)!
         
         for _ in 1...amount {
             let iwashi_node:SCNNode = iwashi_node_base.clone()
+            let iwashi_rader_node:UIView = UIView()
             iwashi_node.position = SCNVector3(
                 ( x + (Double( arc4random_uniform(10) ) - 5 ) / 5  ),
                 ( y + (Double( arc4random_uniform(10) ) - 5 ) / 5  ),
                 ( z +  (Double( arc4random_uniform(10) ) - 5 ) / 5 )
             )
-            fish_array.append(value: iwashi_node)
+            iwashi_rader_node.frame = CGRect.init(x: Double((iwashi_node.position.x+150.0)/2.0), y: Double((iwashi_node.position.z+40.0)*(80.0/60.0)), width: 2.0, height: 2.0)
+            iwashi_rader_node.backgroundColor = UIColor.green
             
-            scene.rootNode.addChildNode(iwashi_node)
+            let move_x:Float = (Float(arc4random_uniform(5)) - 2.5) / 40
+            let move_y:Float = (Float(arc4random_uniform(5)) - 2.5) / 40
+            let move_z:Float = 3.0 / 10
+            
+            fish_array.append(value: iwashi_node, view: iwashi_rader_node, move_x: move_x, move_y: move_y, move_z: move_z)
+            
+            self.controller.rader.addSubview(iwashi_rader_node)
+            //scene.rootNode.addChildNode(iwashi_node)
         }
     }
     
-    func move(){
-        var fish_node:LinkedListNode<SCNNode>? = fish_array.first
+    @objc func move(){
+        var fish_node:LinkedListNode<SCNNode, UIView, Float, Float, Float>? = fish_array.first
         while( fish_node != nil ){
             let fish:SCNNode! = fish_node?.value
-            fish.position = SCNVector3(fish.position.x, fish.position.y, fish.position.z + 0.6)
-            
+            let rader:UIView! = fish_node?.view
+            fish.position = SCNVector3(
+                fish.position.x + fish_node!.move_x,
+                fish.position.y + fish_node!.move_y,
+                fish.position.z + fish_node!.move_z)
+            rader.frame.origin.y = rader.frame.origin.y + (0.4*(80.0/60.0))
+            if(canSee(fish_node: fish_node!)){
+              scene.rootNode.addChildNode(fish)
+            }else{
+              fish.removeFromParentNode()
+            }
             if(
-                fabs(fish.position.z - penguin.position.z) < 1
-                && fabs(fish.position.y - penguin.position.y) < 1
-                && fabs(fish.position.x - penguin.position.x) < 1
+                abs(fish.position.z - penguin.position.z) < 1
+                && abs(fish.position.y - penguin.position.y) < 1
+                && abs(fish.position.x - penguin.position.x) < 1
                 && controller.eat_flag == true
             ){
                 let fish_x:Float = fish.position.x;
@@ -87,7 +105,8 @@ class Fishes : NSObject {
                 let fish_z:Float = fish.position.z;
                 // remove object
                 fish.removeFromParentNode()
-                fish_array.removeNode(node: fish_node!)
+                rader.removeFromSuperview()
+                _ = fish_array.removeNode(node: fish_node!)
                 
                 // ring setting
                 let ring:SCNScene = SCNScene(named: "art.scnassets/ring_new.dae")!
@@ -146,20 +165,33 @@ class Fishes : NSObject {
                 
                 
                 
-            }else if( fish.position.z > 20 ){
+            }else if( fish.position.z > 15 || fish.position.z < -40){
                 fish.removeFromParentNode()
-                fish_array.removeNode(node: fish_node!)
+                rader.removeFromSuperview()
+                _ = fish_array.removeNode(node: fish_node!)
             }
+            
             fish_node = fish_node?.next
         }
         
     }
     
-    func resetCombo(){
+    func canSee(fish_node :LinkedListNode<SCNNode, UIView, Float, Float, Float>) -> Bool{
+        if (
+            abs(self.penguin.position.x - fish_node.value.position.x) < 30
+            && abs(self.penguin.position.y - fish_node.value.position.y) < 30
+            && (self.penguin.position.z - fish_node.value.position.z) < 40
+            ){
+            return true
+        }
+        return false
+    }
+    
+    @objc func resetCombo(){
         controller.combo = 0
     }
         
-    func removeRing(){
+    @objc func removeRing(){
         let ring_node:SCNNode? = scene.rootNode.childNode(withName: "ring_new", recursively: false)
         let text_node:SCNNode? = scene.rootNode.childNode(withName: "Text", recursively: false)
         let combo_node:SCNNode? = scene.rootNode.childNode(withName: "combo", recursively: false)

@@ -13,9 +13,6 @@ import SceneKit
 class GameViewController: UIViewController {
 
     var scene: SCNScene
-    var bubble_array: LinkedList = LinkedList<SCNNode>()
-    var cycle_bubble_array:LinkedList = LinkedList<SCNNode>()
-    var ground_array:LinkedList = LinkedList<SCNNode>()
     var camera_btn: UIImageView
     var eat_btn: UIButton
     var eat_timer: Timer
@@ -35,7 +32,7 @@ class GameViewController: UIViewController {
     var trans_flag:Bool = false
     var gold_ring:SCNNode?
     var gold_ring_timer:Timer
-    var move_divide:Int = 100
+    var move_divide:Int = 60
     var penguin_node:SCNNode = SCNNode();
     var penguin_base_material:[SCNMaterial]
     var banner:UIImageView
@@ -46,6 +43,15 @@ class GameViewController: UIViewController {
     
     var eat_flag: Bool = false
     var combo: Int = 0
+    
+    // rader
+    var rader: UIView
+    var penguin_point: UIView
+    var shati1_point: UIView
+    var shati2_point: UIView
+    var shati3_point: UIView
+    var ei_point: UIView
+    var ami_point: UIView
     
     // touch state
     var touch_state:Bool = false
@@ -77,13 +83,20 @@ class GameViewController: UIViewController {
         // button init
         self.camera_btn = UIImageView(image: UIImage(named: "camera_btn.png"))
         self.move_btn = UIImageView(image: UIImage(named: "move_btn.png"))
-        self.eat_btn = UIButton(type: UIButtonType.custom)
+        self.eat_btn = UIButton(type: UIButton.ButtonType.custom)
         
         // label init
         self.points = UILabel(frame: CGRect(x: 50, y: 30, width: 100, height: 50))
         self.depth_label = UILabel(frame: CGRect(x: 560, y: 30, width: 100, height: 50))
 
         self.banner = UIImageView(image: UIImage(named: "banner_start.png"))
+        self.rader = UIView();
+        self.penguin_point = UIView()
+        self.shati1_point = UIView()
+        self.shati2_point = UIView()
+        self.shati3_point = UIView()
+        self.ei_point = UIView()
+        self.ami_point = UIView()
         
         super.init(coder: aDecoder)!;
     }
@@ -113,12 +126,18 @@ class GameViewController: UIViewController {
         self.scene.fogEndDistance = 50.0;
         self.scene.fogDensityExponent = 1.0;
         
+        // create rader
+        self.rader.frame = CGRect.init(x: 50, y: 80, width: 150, height: 80)
+        self.rader.alpha = 0.3
+        self.rader.backgroundColor = UIColor.red
+        self.view.addSubview(self.rader)
+        
         // create and add a camera to the scene
         self.cameraNode.camera = SCNCamera()
         self.cameraNode.position = SCNVector3(0, 2, 13)
-        self.cameraNode.camera?.focalDistance = 10.0
+        /*self.cameraNode.camera?.focalDistance = 10.0
         self.cameraNode.camera?.focalSize = 30.0
-        self.cameraNode.camera?.focalBlurRadius = 0.15
+        self.cameraNode.camera?.focalBlurRadius = 0.15*/
         self.scene.rootNode.addChildNode(cameraNode)
         
         // create and add a light to the scene
@@ -143,6 +162,27 @@ class GameViewController: UIViewController {
         self.penguin_node = penguin.rootNode.childNode(withName: "Cube", recursively: false)!
         self.scene.rootNode.addChildNode(penguin_node)
 
+        // create rader
+        self.penguin_point = UIView.init(frame: CGRect.init(x: 75, y: ((40.0/60.0)*80.0), width: 3, height: 3))
+        self.shati1_point = UIView.init(frame: CGRect.init(x: 75, y: 0, width: 3, height: 6))
+        self.shati2_point = UIView.init(frame: CGRect.init(x: 75, y: 0, width: 3, height: 6))
+        self.shati3_point = UIView.init(frame: CGRect.init(x: 75, y: 0, width: 3, height: 6))
+        self.ei_point = UIView.init(frame: CGRect.init(x: 75, y: 0, width: 4, height: 2))
+        self.ami_point = UIView.init(frame: CGRect.init(x: 75, y: 0, width: 15, height: 3))
+
+        
+        self.penguin_point.backgroundColor = UIColor.yellow
+        self.shati1_point.backgroundColor = UIColor.white
+        self.shati2_point.backgroundColor = UIColor.white
+        self.shati3_point.backgroundColor = UIColor.white
+        self.ei_point.backgroundColor = UIColor.white
+        self.ami_point.backgroundColor = UIColor.white
+        self.rader.addSubview(self.penguin_point)
+        self.rader.addSubview(self.shati1_point)
+        self.rader.addSubview(self.shati2_point)
+        self.rader.addSubview(self.shati3_point)
+        self.rader.addSubview(self.ei_point)
+        self.rader.addSubview(self.ami_point)
         
         // create sea
         let seaNode = SCNNode();
@@ -164,6 +204,7 @@ class GameViewController: UIViewController {
         //self.scene.rootNode.addChildNode(seaEndNode)
         
         // create ground
+        /*
         let groundNode = SCNNode();
         groundNode.geometry = SCNBox(width: 400, height: 3, length: 400, chamferRadius: 0)
         groundNode.position = SCNVector3(0, -40, 0)
@@ -171,23 +212,23 @@ class GameViewController: UIViewController {
         self.groundMaterial.diffuse.contents = UIImage(named: "ground.jpg")
         self.groundMaterial.fresnelExponent = 10.0
         groundNode.geometry!.materials = [self.groundMaterial]
-        ground_array.append(value: groundNode)
+        ground_array.append(value: groundNode)*/
         //self.scene.rootNode.addChildNode(groundNode)
         
         // create camera button
-        self.camera_btn.frame = CGRect(x: 500, y: 100, width: 64, height: 64)
+        self.camera_btn.frame = CGRect(x: screenWidth - 300, y: 100, width: 64, height: 64)
         self.camera_btn.alpha = 0.8
         self.view.addSubview(self.camera_btn)
         
         // create move button
-        self.move_btn.frame = CGRect(x: 50, y: 250, width: 64, height: 64)
+        self.move_btn.frame = CGRect(x: 100, y: 250, width: 64, height: 64)
         self.view.addSubview(self.move_btn)
         
         // create eat button
-        self.eat_btn.frame = CGRect(x: 540, y: 240, width: 84, height: 84)
-        self.eat_btn.setImage(UIImage(named: "eat_btn.png"), for: UIControlState())
-        self.eat_btn.setImage(UIImage(named: "eat_btn_press.png"), for: UIControlState.highlighted)
-        self.eat_btn.addTarget(self, action: #selector(GameViewController.eatState), for: UIControlEvents.touchDown)
+        self.eat_btn.frame = CGRect(x: screenWidth - 250, y: screenHeight - 200, width: 84, height: 84)
+        self.eat_btn.setImage(UIImage(named: "eat_btn.png"), for: UIControl.State())
+        self.eat_btn.setImage(UIImage(named: "eat_btn_press.png"), for: UIControl.State.highlighted)
+        self.eat_btn.addTarget(self, action: #selector(GameViewController.eatState), for: UIControl.Event.touchDown)
         self.view.addSubview(self.eat_btn)
         
         // create points label
@@ -208,6 +249,10 @@ class GameViewController: UIViewController {
         
         // set the scene to the view
         self.scnView.scene = self.scene
+        self.scnView.antialiasingMode = SCNAntialiasingMode.multisampling4X
+        
+        
+        
         
         
         // show statistics such as fps and timing information
@@ -216,9 +261,8 @@ class GameViewController: UIViewController {
         // configure the view
         scnView.backgroundColor = UIColor(red: 0, green: 0, blue: 1, alpha: 1.0)
         
-        _ = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(GameViewController.generateIwashi), userInfo: nil, repeats: true)
-        _ = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(GameViewController.generateIka), userInfo: nil, repeats: true)
-        _ = Timer.scheduledTimer(timeInterval: 12.0, target: self, selector: #selector(GameViewController.generatePenguins), userInfo: nil, repeats: true)
+        _ = Timer.scheduledTimer(timeInterval: 2.9, target: self, selector: #selector(GameViewController.generateIwashi), userInfo: nil, repeats: true)
+        _ = Timer.scheduledTimer(timeInterval: 1.8, target: self, selector: #selector(GameViewController.generateIka), userInfo: nil, repeats: true)
         _ = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(GameViewController.generateShati), userInfo: nil, repeats: false)
         _ = Timer.scheduledTimer(timeInterval: 22.5, target: self, selector: #selector(GameViewController.generateAmi), userInfo: nil, repeats: false)
         _ = Timer.scheduledTimer(timeInterval: 3.0, target: self, selector: #selector(GameViewController.generateEi), userInfo: nil, repeats: false)
@@ -227,27 +271,23 @@ class GameViewController: UIViewController {
         _ = Timer.scheduledTimer(timeInterval: 1.5, target: self, selector: #selector(GameViewController.displayStartBanner), userInfo: nil, repeats: false)
         let displayLink = CADisplayLink(target: self, selector: #selector(GameViewController.moveObject))
         displayLink.preferredFramesPerSecond = 30
-        displayLink.add(to: RunLoop.current, forMode: RunLoopMode.defaultRunLoopMode)
+        displayLink.add(to: RunLoop.current, forMode: RunLoop.Mode.default)
         
     }
     
-    func generateIwashi(){
+    @objc func generateIwashi(){
         _ = Fishes(s_scene: self.scene, penguin_node: self.penguin_node, game_controller: self)
     }
     
-    func generateIka(){
+    @objc func generateIka(){
         _ = Ikas(s_scene: self.scene, penguin_node: self.penguin_node, game_controller: self)
     }
     
-    func generatePenguins(){
-        _ = Penguins(s_scene: self.scene, s_node: self.penguin_node)
-    }
-    
-    func generateBubble(){
+    @objc func generateBubble(){
         _ = Bubbles(s_scene: self.scene, penguin_node: self.penguin_node, game_controller: self)
     }
     
-    func generateCycleBubble(){
+    @objc func generateCycleBubble(){
         _ = CycleBubbles(s_scene: self.scene, penguin_node: self.penguin_node, game_controller: self)
     }
     
@@ -255,7 +295,7 @@ class GameViewController: UIViewController {
         self.displayBanner("banner_loading.png")
     }
     
-    func displayStartBanner(){
+    @objc func displayStartBanner(){
         self.displayBanner("banner_start.png")
     }
     
@@ -271,7 +311,7 @@ class GameViewController: UIViewController {
         self.displayBanner("banner_trans.png")
     }
     
-    func hideBanner(){
+    @objc func hideBanner(){
         self.banner.removeFromSuperview()
     }
     
@@ -281,7 +321,7 @@ class GameViewController: UIViewController {
         _ = Timer.scheduledTimer(timeInterval: 2.5, target: self, selector: #selector(GameViewController.hideBanner), userInfo: nil, repeats: false)
     }
     
-    func generateShati(){
+    @objc func generateShati(){
         let shati:SCNScene = SCNScene(named: "art.scnassets/shati_new.dae")!
         self.shati_node = shati.rootNode.childNode(withName: "shati_new", recursively: false)
         self.shati_node!.scale = SCNVector3(1.5, 1.5, 1.5)
@@ -345,7 +385,7 @@ class GameViewController: UIViewController {
         }
     }
     
-    func generateAmi(){
+    @objc func generateAmi(){
         let ami:SCNScene = SCNScene(named: "art.scnassets/ami-whole.dae")!
         if( self.ami_node == nil){
             self.ami_node = ami.rootNode.childNode(withName: "ami-whole", recursively: false)
@@ -370,7 +410,7 @@ class GameViewController: UIViewController {
         self.ami_node!.position = SCNVector3(x, y, z)
     }
     
-    func generateEi(){
+    @objc func generateEi(){
         let ei:SCNScene = SCNScene(named: "art.scnassets/ei.dae")!
         if( self.ei_node == nil){
             self.ei_node = ei.rootNode.childNode(withName: "ei", recursively: false)
@@ -392,21 +432,23 @@ class GameViewController: UIViewController {
         self.ei_node!.position = SCNVector3(x, y, z)
     }
     
-    func moveObject(){
+    @objc func moveObject(){
         if( self.shati_node != nil ){
             self.shati_node!.position = SCNVector3(
                 x: self.shati_node!.position.x,
                 y: self.shati_node!.position.y,
                 z: self.shati_node!.position.z + 0.15
             )
+            self.shati1_point.frame.origin.x = (CGFloat((self.shati_node!.position.x+150.0)/2.0))
+            self.shati1_point.frame.origin.y = (CGFloat((self.shati_node!.position.z+120+0.15)*(60.0/140.0)))
             if( self.shati_node!.position.z > 20 ){
                 //self.shati_node!.removeFromParentNode()
                 //self.shati_node = nil
                 self.adjustShati()
             }else if(
-                fabs(self.penguin_node.position.z - self.shati_node!.position.z) < 3
-                    && fabs(self.penguin_node.position.y - self.shati_node!.position.y) < 3
-                    && fabs(self.penguin_node.position.x - self.shati_node!.position.x) < 2
+                abs(self.penguin_node.position.z - self.shati_node!.position.z) < 3
+                    && abs(self.penguin_node.position.y - self.shati_node!.position.y) < 3
+                    && abs(self.penguin_node.position.x - self.shati_node!.position.x) < 2
                     && self.cancel_minus_efect_flag == false
             ){
                 if( self.trans_flag == false ){
@@ -424,10 +466,12 @@ class GameViewController: UIViewController {
                     y: self.shati_node2!.position.y,
                     z: self.shati_node2!.position.z + 0.2
                 )
+                self.shati2_point.frame.origin.x = (CGFloat((self.shati_node2!.position.x+150.0)/2.0))
+                self.shati2_point.frame.origin.y = (CGFloat((self.shati_node2!.position.z+120+0.2)*(80.0/150.0)))
                 if(
-                    fabs(self.penguin_node.position.z - self.shati_node2!.position.z) < 3
-                    && fabs(self.penguin_node.position.y - self.shati_node2!.position.y) < 3
-                    && fabs(self.penguin_node.position.x - self.shati_node2!.position.x) < 2
+                    abs(self.penguin_node.position.z - self.shati_node2!.position.z) < 3
+                    && abs(self.penguin_node.position.y - self.shati_node2!.position.y) < 3
+                    && abs(self.penguin_node.position.x - self.shati_node2!.position.x) < 2
                     && self.cancel_minus_efect_flag == false
                 ){
                     if( self.trans_flag == false ){
@@ -446,10 +490,12 @@ class GameViewController: UIViewController {
                     y: self.shati_node3!.position.y,
                     z: self.shati_node3!.position.z + 0.25
                 )
+                self.shati3_point.frame.origin.x = (CGFloat((self.shati_node3!.position.x+150.0)/2.0))
+                self.shati3_point.frame.origin.y = (CGFloat((self.shati_node3!.position.z+120+0.25)*(80.0/150.0)))
                 if(
-                    fabs(self.penguin_node.position.z - self.shati_node3!.position.z) < 3
-                        && fabs(self.penguin_node.position.y - self.shati_node3!.position.y) < 3
-                        && fabs(self.penguin_node.position.x - self.shati_node3!.position.x) < 2
+                    abs(self.penguin_node.position.z - self.shati_node3!.position.z) < 3
+                        && abs(self.penguin_node.position.y - self.shati_node3!.position.y) < 3
+                        && abs(self.penguin_node.position.x - self.shati_node3!.position.x) < 2
                         && self.cancel_minus_efect_flag == false
                     ){
                         if( self.trans_flag == false ){
@@ -467,14 +513,16 @@ class GameViewController: UIViewController {
                 y: self.ami_node!.position.y,
                 z: self.ami_node!.position.z + 0.10
             )
+            self.ami_point.frame.origin.x = (CGFloat((self.ami_node!.position.x+150.0)/2.0))
+            self.ami_point.frame.origin.y = (CGFloat((self.ami_node!.position.z+120+0.10)*(80.0/140.0)))
             if( self.ami_node!.position.z > 20 ){
                 //self.ami_node!.removeFromParentNode()
                 //self.ami_node = nil
                 self.adjustAmi()
             }else if(
-                fabs(self.penguin_node.position.z - self.ami_node!.position.z) < 3
-                    && fabs(self.penguin_node.position.y - self.ami_node!.position.y) < 10
-                    && fabs(self.penguin_node.position.x - self.ami_node!.position.x) < 10
+                abs(self.penguin_node.position.z - self.ami_node!.position.z) < 3
+                    && abs(self.penguin_node.position.y - self.ami_node!.position.y) < 10
+                    && abs(self.penguin_node.position.x - self.ami_node!.position.x) < 10
                     && self.cancel_minus_efect_flag == false
                 ){
                     if( self.trans_flag == false ){
@@ -483,7 +531,7 @@ class GameViewController: UIViewController {
                         self.eatEfect(node: self.ami_node!)
                     }
                     
-            }else if( fabs(self.ami_node!.position.z - Float(-80)) < 0.1 ){
+            }else if( abs(self.ami_node!.position.z - Float(-80)) < 0.1 ){
                 self.displayAmiBanner()
             }
         }
@@ -493,14 +541,16 @@ class GameViewController: UIViewController {
                 y: self.ei_node!.position.y,
                 z: self.ei_node!.position.z + 0.16
             )
+            self.ei_point.frame.origin.x = (CGFloat((self.ei_node!.position.x+150.0)/2.0))
+            self.ei_point.frame.origin.y = (CGFloat((self.ei_node!.position.z+120+0.16)*(80.0/140.0)))
             if( self.ei_node!.position.z > 20 ){
                 //self.ami_node!.removeFromParentNode()
                 //self.ami_node = nil
                 self.adjustEi()
             }else if(
-                fabs(self.penguin_node.position.z - self.ei_node!.position.z) < 2
-                    && fabs(self.penguin_node.position.y - self.ei_node!.position.y) < 2
-                    && fabs(self.penguin_node.position.x - self.ei_node!.position.x) < 2
+                abs(self.penguin_node.position.z - self.ei_node!.position.z) < 2
+                    && abs(self.penguin_node.position.y - self.ei_node!.position.y) < 2
+                    && abs(self.penguin_node.position.x - self.ei_node!.position.x) < 2
                     && self.cancel_minus_efect_flag == false
                 ){
                     if( self.trans_flag == false ){
@@ -599,11 +649,11 @@ class GameViewController: UIViewController {
         _ = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(GameViewController.removeRing), userInfo: nil, repeats: false)
     }
     
-    func resetCombo(){
+    @objc func resetCombo(){
         self.combo = 0
     }
     
-    func removeRing(){
+    @objc func removeRing(){
         let ring_node:SCNNode? = scene.rootNode.childNode(withName: "ring_new", recursively: false)
         let text_node:SCNNode? = scene.rootNode.childNode(withName: "ikapoint", recursively: false)
         let combo_node:SCNNode? = scene.rootNode.childNode(withName: "combo", recursively: false)
@@ -660,7 +710,7 @@ class GameViewController: UIViewController {
         _ = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(GameViewController.setNoCancelMinus), userInfo: nil, repeats: false)
     }
     
-    func removeMinus(){
+    @objc func removeMinus(){
         let ring_node:SCNNode? = scene.rootNode.childNode(withName: "ring_new", recursively: false)
         let text_node:SCNNode? = scene.rootNode.childNode(withName: "minus", recursively: false)
         if( ring_node != nil ){
@@ -675,16 +725,16 @@ class GameViewController: UIViewController {
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         let first_touch:UITouch = touches.first!
         let point_touch:CGPoint = first_touch.location(in: self.view)
-        if( 0 < point_touch.x && point_touch.x < 200 && 200 < point_touch.y && point_touch.y < 400){
+        if( 0 < point_touch.x && point_touch.x < 300 && 200 < point_touch.y && point_touch.y < 500){
             
             // set dx dy
-            let dx:Double = Double( CGFloat(72) - point_touch.x )
-            let dy:Double = Double( CGFloat(282) - point_touch.y )
+            let dx:Double = Double( CGFloat(132) - point_touch.x )
+            let dy:Double = Double( CGFloat(273) - point_touch.y )
             
             // set move btn
-            self.move_btn.frame = CGRect(x: 50 - dx, y: 250 - dy, width: 64, height: 64)
+            self.move_btn.frame = CGRect(x: 100 - dx, y: 250 - dy, width: 64, height: 64)
             
-            let rotation:SCNVector4 = SCNVector4(dx / 300 * -1, 1, dy / 300 * -1, M_PI)
+            let rotation:SCNVector4 = SCNVector4(dx / 300 * -1, 1, dy / 300 * -1, Double.pi)
             
             var p_new_x:Double = Double(self.penguin_node.position.x) - dx / Double(self.move_divide)
             var p_new_y:Double = Double(self.penguin_node.position.y) - dy / Double(self.move_divide)
@@ -711,6 +761,7 @@ class GameViewController: UIViewController {
             }
             
             let position:SCNVector3 = SCNVector3(p_new_x, p_new_y, Double(self.penguin_node.position.z))
+            self.penguin_point.frame.origin.x = CGFloat((p_new_x + 150.0) / 2.0)
             
             // set depth
             self.depth = Int(self.calculateDepth(p_new_y))
@@ -738,35 +789,36 @@ class GameViewController: UIViewController {
             self.ambientLightNode.position = SCNVector3(self.penguin_node.position.x, self.penguin_node.position.y + 10, self.penguin_node.position.z + 15)
             
             
-        }else if( 483 < point_touch.x && point_touch.x < 583 && 82 < point_touch.y && point_touch.y < 182 ){
+        }else if( screenWidth - 300 - 100 < point_touch.x && point_touch.x < screenWidth - 300 + 100 && 50 < point_touch.y && point_touch.y < 150 ){
             
             // set dx dy
-            let dx:Double = Double( point_touch.x - CGFloat(533) )
-            let dy:Double = Double( point_touch.y - CGFloat(132) ) * -1
+            let dx:Double = Double( point_touch.x - CGFloat(screenWidth - 300 + 32) )
+            let dy:Double = Double( point_touch.y - CGFloat(100) ) * -1
+            let camera_btn:Double = Double(screenWidth - 300)
             
             // set camera btn
-            self.camera_btn.frame = CGRect(x: 500 + dx, y: 100 - dy, width: 64, height: 64)
+            self.camera_btn.frame = CGRect(x: camera_btn + dx, y: 100 - dy, width: 64, height: 64)
             
             // position calculate
             let r:Double = sqrt( 2 * 2 + 13 * 13 )
-            let x_add_angle:Double = dx * M_PI_2 / 40
+            let x_add_angle:Double = dx / 100 * Double.pi / 2
             //let alpha:Double = atan( 2 / 13 )
-            let y_add_angle:Double = dy * M_PI_2 / 40
+            let y_add_angle:Double = dy / 50 * Double.pi / 2
             
             let position_x:Double = Double(self.penguin_node.position.x) + r * cos(y_add_angle) * sin(x_add_angle)
             let position_y:Double = Double(self.penguin_node.position.y) + r * sin(y_add_angle)
             let position_z:Double = Double(self.penguin_node.position.z) + r * cos(y_add_angle) * cos(x_add_angle)
             
             self.cameraNode.position = SCNVector3(position_x, position_y, position_z)
-            let weight:Double = (abs(y_add_angle/M_PI_2) + abs(x_add_angle/M_PI_2))
-            self.cameraNode.rotation = SCNVector4(-y_add_angle/M_PI_2, x_add_angle/M_PI_2, 0, weight)
+            let weight:Double = (abs(y_add_angle) + abs(x_add_angle))
+            self.cameraNode.rotation = SCNVector4(-y_add_angle/Double.pi/2, x_add_angle/Double.pi/2, 0, weight)
         }
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.cameraNode.position = SCNVector3(self.penguin_node.position.x, self.penguin_node.position.y + 2, self.penguin_node.position.z + 13)
-        self.cameraNode.rotation = SCNVector4(0, 0, 0, M_PI)
-        self.camera_btn.frame = CGRect(x: 500, y: 100, width: 64, height: 64)
+        self.cameraNode.rotation = SCNVector4(0, 0, 0, Double.pi)
+        self.camera_btn.frame = CGRect(x: screenWidth - 300, y: 100, width: 64, height: 64)
     }
     
     // generate bubble
@@ -923,32 +975,32 @@ class GameViewController: UIViewController {
     }
     
     // set true bubble_flag
-    func setYesBubble(){
+    @objc func setYesBubble(){
         self.bubble_flag = true
     }
     
     // set false bubble_flag
-    func setNoBubble(){
+    @objc func setNoBubble(){
         self.bubble_flag = false
     }
     
-    func setYesCancelMinus(){
+    @objc func setYesCancelMinus(){
         self.cancel_minus_efect_flag = true
     }
     
-    func setNoCancelMinus(){
+    @objc func setNoCancelMinus(){
         self.cancel_minus_efect_flag = false
     }
     
     // eat
-    func eatState(){
+    @objc func eatState(){
         self.eat_flag = true
         self.eat_timer.invalidate()
         self.eat_timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(GameViewController.notEatState), userInfo: nil, repeats: false)
     }
     
     // cancel eat
-    func notEatState(){
+    @objc func notEatState(){
         self.eat_flag = false
     }
     
@@ -960,7 +1012,7 @@ class GameViewController: UIViewController {
     // enalble gold mode
     func enalbleGoldState(){
         self.trans_flag = true
-        self.move_divide = 50;
+        self.move_divide = 40;
         let gold_material:SCNMaterial = SCNMaterial()
         gold_material.diffuse.contents = UIColor.yellow
         gold_material.transparency = 0.2
@@ -984,7 +1036,7 @@ class GameViewController: UIViewController {
     }
     
     // animation gold ring
-    func animationGoldRing(){
+    @objc func animationGoldRing(){
         let gold_ring_instance:SCNNode? = self.scene.rootNode.childNode(withName: "ring_gold", recursively: false)!
         gold_ring_instance!.scale = SCNVector3(4.0, 4.0, 4.0)
         gold_ring_instance!.opacity = 0.5
@@ -997,7 +1049,7 @@ class GameViewController: UIViewController {
     }
     
     // cancel gold mode
-    func cancelGoldState(){
+    @objc func cancelGoldState(){
         self.trans_flag = false
         self.move_divide = 100;
         self.penguin_node.geometry?.materials = self.penguin_base_material
@@ -1026,6 +1078,16 @@ class GameViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Release any cached data, images, etc that aren't in use.
+    }
+    
+    // Screen width.
+    public var screenWidth: CGFloat {
+        return UIScreen.main.bounds.width
+    }
+    
+    // Screen height.
+    public var screenHeight: CGFloat {
+        return UIScreen.main.bounds.height
     }
 
 }

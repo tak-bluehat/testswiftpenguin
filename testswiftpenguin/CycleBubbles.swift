@@ -15,7 +15,7 @@ class CycleBubbles : NSObject {
     var scene:SCNScene
     var penguin:SCNNode
     var controller:GameViewController
-    var cycle_bubble_array:LinkedList<SCNNode>
+    var cycle_bubble_array:LinkedList<SCNNode, UIView, Float, Float, Float>
     var dx:Double
     var dy:Double
     
@@ -24,7 +24,7 @@ class CycleBubbles : NSObject {
         self.scene = s_scene
         self.penguin = penguin_node
         self.controller = game_controller
-        self.cycle_bubble_array = LinkedList<SCNNode>()
+        self.cycle_bubble_array = LinkedList<SCNNode, UIView, Float, Float, Float>()
         self.dx = ( Double(arc4random_uniform(10)) - 5.0 ) / 100
         self.dy = ( Double(arc4random_uniform(10)) - 5.0 ) / 100
         
@@ -37,7 +37,7 @@ class CycleBubbles : NSObject {
         //_ = NSTimer.scheduledTimerWithTimeInterval(0.05, target: self, selector: "move", userInfo: nil, repeats: true)
         let displayLink = CADisplayLink(target: self, selector: #selector(CycleBubbles.move))
         displayLink.preferredFramesPerSecond = 30
-        displayLink.add(to: RunLoop.current, forMode: RunLoopMode.defaultRunLoopMode)
+        displayLink.add(to: RunLoop.current, forMode: RunLoop.Mode.default)
         
     }
     
@@ -82,11 +82,11 @@ class CycleBubbles : NSObject {
             bubble_node4.opacity = 0.4
             bubble_node5.opacity = 0.4
             
-            cycle_bubble_array.append(value: bubble_node)
-            cycle_bubble_array.append(value: bubble_node2)
-            cycle_bubble_array.append(value: bubble_node3)
-            cycle_bubble_array.append(value: bubble_node4)
-            cycle_bubble_array.append(value: bubble_node5)
+            cycle_bubble_array.append(value: bubble_node, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+            cycle_bubble_array.append(value: bubble_node2, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+            cycle_bubble_array.append(value: bubble_node3, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+            cycle_bubble_array.append(value: bubble_node4, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+            cycle_bubble_array.append(value: bubble_node5, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
             
             scene.rootNode.addChildNode(bubble_node)
             scene.rootNode.addChildNode(bubble_node2)
@@ -97,14 +97,14 @@ class CycleBubbles : NSObject {
 
     }
     
-    func move(){
-        var cycle_bubble_node:LinkedListNode<SCNNode>? = cycle_bubble_array.first
+    @objc func move(){
+        var cycle_bubble_node:LinkedListNode<SCNNode, UIView, Float, Float, Float>? = cycle_bubble_array.first
         while( cycle_bubble_node != nil ){
             let cycle_bubble:SCNNode! = cycle_bubble_node?.value
             cycle_bubble.position = SCNVector3(x: cycle_bubble.position.x, y: cycle_bubble.position.y + 0.30, z: cycle_bubble.position.z + 0.30)
             if( cycle_bubble.position.y > penguin.position.y + 10 ){
                 cycle_bubble.removeFromParentNode()
-                cycle_bubble_array.removeNode(node: cycle_bubble_node!)
+                _ = cycle_bubble_array.removeNode(node: cycle_bubble_node!)
             }
             cycle_bubble_node = cycle_bubble_node?.next
         }

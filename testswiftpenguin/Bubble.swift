@@ -15,7 +15,7 @@ class Bubbles : NSObject {
     var scene:SCNScene
     var penguin:SCNNode
     var controller:GameViewController
-    var bubble_array:LinkedList<SCNNode>
+    var bubble_array:LinkedList<SCNNode, UIView, Float, Float, Float>
     var dx:Double
     var dy:Double
     
@@ -24,7 +24,7 @@ class Bubbles : NSObject {
         self.scene = s_scene
         self.penguin = penguin_node
         self.controller = game_controller
-        self.bubble_array = LinkedList<SCNNode>()
+        self.bubble_array = LinkedList<SCNNode, UIView, Float, Float, Float>()
         self.dx = ( Double(arc4random_uniform(10)) - 5.0 ) / 100
         self.dy = ( Double(arc4random_uniform(10)) - 5.0 ) / 100
         
@@ -37,7 +37,7 @@ class Bubbles : NSObject {
         //_ = NSTimer.scheduledTimerWithTimeInterval(0.05, target: self, selector: "move", userInfo: nil, repeats: true)
         let displayLink = CADisplayLink(target: self, selector: #selector(Bubbles.move))
         displayLink.preferredFramesPerSecond = 30
-        displayLink.add(to: RunLoop.current, forMode: RunLoopMode.defaultRunLoopMode)
+        displayLink.add(to: RunLoop.current, forMode: RunLoop.Mode.default)
         
     }
     
@@ -114,15 +114,15 @@ class Bubbles : NSObject {
         bubble_node8.opacity = 0.3
         bubble_node9.opacity = 0.3
         
-        bubble_array.append(value: bubble_node)
-        bubble_array.append(value: bubble_node2)
-        bubble_array.append(value: bubble_node3)
-        bubble_array.append(value: bubble_node4)
-        bubble_array.append(value: bubble_node5)
-        bubble_array.append(value: bubble_node6)
-        bubble_array.append(value: bubble_node7)
-        bubble_array.append(value: bubble_node8)
-        bubble_array.append(value: bubble_node9)
+        bubble_array.append(value: bubble_node, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+        bubble_array.append(value: bubble_node2, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+        bubble_array.append(value: bubble_node3, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+        bubble_array.append(value: bubble_node4, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+        bubble_array.append(value: bubble_node5, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+        bubble_array.append(value: bubble_node6, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+        bubble_array.append(value: bubble_node7, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+        bubble_array.append(value: bubble_node8, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
+        bubble_array.append(value: bubble_node9, view: UIView(), move_x: 0, move_y: 0, move_z: 0)
         
         scene.rootNode.addChildNode(bubble_node)
         scene.rootNode.addChildNode(bubble_node2)
@@ -135,14 +135,14 @@ class Bubbles : NSObject {
         scene.rootNode.addChildNode(bubble_node9)
     }
     
-    func move(){
-        var bubble_node:LinkedListNode<SCNNode>? = bubble_array.first
+    @objc func move(){
+        var bubble_node:LinkedListNode<SCNNode, UIView, Float, Float, Float>? = bubble_array.first
         while( bubble_node != nil ){
             let bubble:SCNNode! = bubble_node?.value
             bubble.position = SCNVector3(x: bubble.position.x, y: bubble.position.y, z: bubble.position.z + 0.22)
             if( bubble.position.z > 20 ){
                 bubble.removeFromParentNode()
-                bubble_array.removeNode(node: bubble_node!)            }
+                _ = bubble_array.removeNode(node: bubble_node!)            }
             bubble_node = bubble_node?.next
         }
     }
